@@ -45,7 +45,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     override func viewWillDisappear(animated: Bool) {
         super.viewWillAppear(animated)
         
-        //mapView.removeGestureRecognizer(longPressGestureRecognizer)
+        mapView.removeGestureRecognizer(longPressGestureRecognizer)
     }
 
     override func didReceiveMemoryWarning() {

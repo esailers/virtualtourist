@@ -69,7 +69,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     
     func longPressRecognized(longPress: UIGestureRecognizer) {
         
-        if !editing {
+        if !editing && longPress.state == .Began {
             let location = longPress.locationInView(mapView)
             let locationCoordinate = mapView.convertPoint(location, toCoordinateFromView: mapView)
             let pin = Pin(latitude: locationCoordinate.latitude, longitude: locationCoordinate.longitude, context: CoreDataStackManager.sharedInstance().managedObjectContext)
@@ -79,7 +79,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         CoreDataStackManager.sharedInstance().saveContext()
     }
     
-    // MARK: Add Annotations
+    // MARK: - Add Annotations
     
     func loadAnnotations() {
         

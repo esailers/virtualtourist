@@ -96,7 +96,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
     // MARK: - Get Photos
     
     func getNewCollectionOfPhotos() {
-        FlickrClient().photosAtPin(pin, context: CoreDataStackManager.sharedInstance().managedObjectContext) { (photos, error) in
+        FlickrClient().photosAtPin(pin, context: CoreDataStackManager.sharedInstance().managedObjectContext) {
+            (photos, error) in
             
             guard error == nil else {
                 print(error)

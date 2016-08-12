@@ -22,8 +22,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
     @IBOutlet weak var noImagesLabel: UILabel!
     @IBOutlet weak var bottomBarButton: UIBarButtonItem!
     
-    var itemCount: Int!
-    
     // MARK: - UIViewController lifecycle
 
     override func viewDidLoad() {
@@ -50,9 +48,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         
-        itemCount = photos.count
-        
-        if itemCount == 0 {
+        if photos.count == 0 {
             bottomBarButton.enabled = false
             getNewCollectionOfPhotos()
         }
@@ -77,7 +73,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
             
             var selectedPhotos = [Photo]()
             
-            // http://victorlin.me/posts/2016/04/29/uicollectionview-invalid-number-of-items-crash-issue recommends performBatchUpdates and itemCount to properly update the collectionView
             collectionView.performBatchUpdates ({
                 
                 let sortedIndexes = self.selectedIndexes.sort {$0.row > $1.row}
@@ -86,14 +81,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
                     let photoObject = self.photos[indexPath.row]
                     self.photos.removeAtIndex(indexPath.row)
                     self.collectionView.deleteItemsAtIndexPaths([indexPath])
-                    self.itemCount = self.itemCount - 1
                     selectedPhotos.append(photoObject)
                 }
                 
                 }
                 , completion: { (completed) in
                     
-                    if self.itemCount == 0 {
+                    if self.photos.count == 0 {
                         dispatch_async(dispatch_get_main_queue()) {
                             self.noImagesLabel.text = "Album is Empty"
                             self.noImagesLabel.hidden = false
@@ -105,6 +99,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
             for photo in selectedPhotos {
                 CoreDataStackManager.sharedInstance().managedObjectContext.deleteObject(photo)
             }
+            
+            CoreDataStackManager.sharedInstance().saveContext()
             
             selectedIndexes = [NSIndexPath]()
             collectionView.reloadData()
@@ -137,11 +133,10 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
                 }
                 dispatch_async(dispatch_get_main_queue()) {
                     self.photos = photos
-                    self.itemCount = self.photos.count
                     CoreDataStackManager.sharedInstance().saveContext()
                 }
                 dispatch_async(dispatch_get_main_queue()) {
-                    if self.itemCount == 0 {
+                    if self.photos.count == 0 {
                         self.noImagesLabel.text = "No Images Found"
                         self.noImagesLabel.hidden = false
                     } else {
@@ -157,13 +152,12 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
     // MARK: - UICollectionViewDataSource
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return itemCount
+        return photos.count
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as! PhotoCollectionViewCell
         let photo = photos[indexPath.row]
-        itemCount = photos.count
         
         if let photoImage = photo.getImage() {
             cell.photoImageView.image = photoImage
